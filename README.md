@@ -1,7 +1,6 @@
 # CloudStack-IaC
 **CloudStack 기반 쿠버네티스 클러스터 자동 구축 및 DevOps 환경 통합 (Terraform + Ansible + Kubernetes)**
 
---
 ## 프로젝트 개요
 
 CloudStack 환경에서 **Infrastructure as Code (IaC)** 방식을 활용하여 
@@ -10,7 +9,6 @@ DevOps CI/CD 환경을 통합 구축한 프로젝트입니다.
 
 > Terraform → Ansible → Kubernetes → DevOps → CI/CD 까지 이어지는 **엔드-투-엔드 자동화 파이프라인**
 
---
 ## 실행 순서
 
 ### Terraform을 활용한 CloudStack 인프라 프로비저닝
