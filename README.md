@@ -13,20 +13,24 @@ DevOps CI/CD 환경을 통합 구축한 프로젝트입니다.
 
 ### Terraform을 활용한 CloudStack 인프라 프로비저닝
 
+- Master 1대 + Worker 2대 VM 생성
+- Jenkins(30880), GitLab(30022/30080), Registry(30500) 포트포워딩 자동 생성
+- terraform output 에 각 노드의 IP 정보 출력
+
+### Ansible을 활용한 Kubernetes 클러스터 구성
+
 - Master/Worker 자동 설치 및 `kubeadm join` 수행
 - Calico 또는 Cilium CNI 구성
 - MetalLB (L2 모드) 설정으로 외부 접근 서비스 제공
 
-### Ansible을 활용한 Kubernetes 클러스터 구성
+### Kubernetes를 활용한 DevOps 환경 배포
 
 - Jenkins, GitLab, Docker Registry 배포
 - 각 서비스는 LoadBalancer IP로 외부 노출
 - Secret 및 PVC를 이용한 데이터 영속화 구성
 
-### Kubernetes를 활용한 DevOps 환경 배포
+### CI/CD 파이프라인 검증
 
 - GitLab 프로젝트 생성 및 WebHook으로 Jenkins 연결
 - 커밋 시 Jenkins Pipeline 자동 실행
 - Docker 이미지 빌드 → Registry 푸시 → K8s 배포
-
-### CI/CD 파이프라인 검증
