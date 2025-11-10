@@ -1,6 +1,8 @@
 # CloudStack-IaC
 **CloudStack 기반 쿠버네티스 클러스터 자동 구축 및 DevOps 환경 통합 (Terraform + Ansible + Kubernetes)**
 
+---
+
 ## 프로젝트 개요
 
 CloudStack 환경에서 **Infrastructure as Code (IaC)** 방식을 활용하여 
@@ -8,13 +10,15 @@ CloudStack 환경에서 **Infrastructure as Code (IaC)** 방식을 활용하여
 
 > Terraform → Ansible → Kubernetes → DevOps → CI/CD 까지 이어지는 **엔드-투-엔드 자동화 파이프라인**
 
+---
+
 ## 실행 순서
 
 ### Terraform을 활용한 CloudStack 인프라 프로비저닝
 
 - Master 1대 + Worker 2대 VM 생성
 - Jenkins(30880), GitLab(30022/30080), Registry(30500) 포트포워딩 자동 생성
-- terraform output 에 각 노드의 IP 정보 출력
+- `terraform output` 에 각 노드의 IP 정보 출력
 
 ### Ansible을 활용한 Kubernetes 클러스터 구성
 
