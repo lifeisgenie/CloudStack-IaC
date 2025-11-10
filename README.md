@@ -4,8 +4,7 @@
 ## 프로젝트 개요
 
 CloudStack 환경에서 **Infrastructure as Code (IaC)** 방식을 활용하여 
-쿠버네티스 클러스터를 자동 프로비저닝하고, **Jenkins / GitLab / Docker Registry**로 구성된  
-DevOps CI/CD 환경을 통합 구축한 프로젝트입니다.
+쿠버네티스 클러스터를 자동 프로비저닝하고, **Jenkins / GitLab / Docker Registry**로 구성된 DevOps CI/CD 환경을 통합 구축한 프로젝트입니다.
 
 > Terraform → Ansible → Kubernetes → DevOps → CI/CD 까지 이어지는 **엔드-투-엔드 자동화 파이프라인**
 
