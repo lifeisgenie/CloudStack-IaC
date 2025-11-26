@@ -1,0 +1,12 @@
+---
+- name: Kubernetes master node 설정
+  hosts: k8s_master
+  become: yes
+  roles:
+    - k8s_master
+
+- name: Kubernetes worker node 설정
+  hosts: k8s_worker
+  become: yes
+  roles:
+    - k8s_worker
