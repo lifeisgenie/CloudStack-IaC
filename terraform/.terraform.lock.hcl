@@ -1,0 +1,45 @@
+# This file is maintained automatically by "terraform init".
+# Manual edits may be lost in future updates.
+
+provider "registry.terraform.io/cloudstack/cloudstack" {
+  version     = "0.5.0"
+  constraints = "~> 0.5.0"
+  hashes = [
+    "h1:C9S+b5zGGI6BZSwypx8bao7mbfs0tCd6P5hvaId6tc4=",
+    "zh:052651013b6f4d7329eff9b320dc4b7c6ccc3b7279a0574e84a851407246a22e",
+    "zh:073d27d9e1224605af7676331a816e94a6dcf7d64e18d0759e6a47d0ba7a601f",
+    "zh:496b0afdc74e216686ad755ff009396476ee84751366e934c60af8d81f98f411",
+    "zh:4a9e038a5c500219dd2126e63ee66359ec717809d762932e8c4f5b00efe10181",
+    "zh:62051d4c32f7e6d5d95de33829a14e1ab58acf6419f7ae5912dd8e4bd9c29e57",
+    "zh:72115237419abf5565ed15f2286d590c4fea8b2563d69d265133c488c42b6066",
+    "zh:728e99dc5e9d8baec66a3e208e848bacf3134e6f77665fbf9973e186b8f9bf9b",
+    "zh:7eaeb6158bc8207ee927f81e5576d6be640d6ed02185a4a2f50836cd1f453118",
+    "zh:a57d4c364e127a9ba41865b4a69b97d61dff02e05b9d1f3b4e6a4ea38c52d010",
+    "zh:af68c90c16b98d249ad01b9215e0dbcb66cb9de21cb3f977cc73b78d80a90413",
+    "zh:c94c7da0cb28036d5d20b4e047828c9b18fdd6b9e7ec8653f4309795c9f3b645",
+    "zh:cfe7f391919b678196293f64e1374db326ca6b03f568a0a4ad0b315f385f3590",
+    "zh:daecd1d1ab2fe19425b466f572165943f55b1f1c9bc24d17245d4c0f79fc7894",
+    "zh:dc5bba10bf168c1e1ee97f7ea083b4f692dfb04a501bded224ae1a28b63dcc9e",
+    "zh:dcbc919a4c7d786900e6e1acf5a7915c7cc87a4fae986884bae782447de6938e",
+    "zh:f079807153210dfa73e8d24f2e6c199d46ea6803dee4517eb625a9d0150b7a08",
+  ]
+}
+
+provider "registry.terraform.io/hashicorp/local" {
+  version = "2.6.1"
+  hashes = [
+    "h1:LMoX85QLTgCCqRuy2aXoz47P7gZ4WRPSA00fUPC/Rho=",
+    "zh:10050d08f416de42a857e4b6f76809aae63ea4ec6f5c852a126a915dede814b4",
+    "zh:2df2a3ebe9830d4759c59b51702e209fe053f47453cb4688f43c063bac8746b7",
+    "zh:2e759568bcc38c86ca0e43701d34cf29945736fdc8e429c5b287ddc2703c7b18",
+    "zh:6a62a34e48500ab4aea778e355e162ebde03260b7a9eb9edc7e534c84fbca4c6",
+    "zh:74373728ba32a1d5450a3a88ac45624579e32755b086cd4e51e88d9aca240ef6",
+    "zh:78d5eefdd9e494defcb3c68d282b8f96630502cac21d1ea161f53cfe9bb483b3",
+    "zh:8dddae588971a996f622e7589cd8b9da7834c744ac12bfb59c97fa77ded95255",
+    "zh:946f82f66353bb97aefa8d95c4ca86db227f9b7c50b82415289ac47e4e74d08d",
+    "zh:e9a5c09e6f35e510acf15b666fd0b34a30164cecdcd81ce7cda0f4b2dade8d91",
+    "zh:eafe5b873ef42b32feb2f969c38ff8652507e695620cbaf03b9db714bee52249",
+    "zh:ec146289fa27650c9d433bb5c7847379180c0b7a323b1b94e6e7ad5d2a7dbe71",
+    "zh:fc882c35ce05631d76c0973b35adde26980778fc81d9da81a2fade2b9d73423b",
+  ]
+}
