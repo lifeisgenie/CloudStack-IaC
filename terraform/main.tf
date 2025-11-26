@@ -201,7 +201,7 @@ locals {
 # === Ansible inventory 파일 생성 ===
 
 resource "local_file" "ansible_inventory" {
-  filename = "${path.module}/ansible/inventory/hosts.ini"
+  filename = "${path.module}/../ansible/inventory/hosts.ini"
 
   content = templatefile("${path.module}/templates/hosts.ini.tftpl", {
     masters = local.masters
