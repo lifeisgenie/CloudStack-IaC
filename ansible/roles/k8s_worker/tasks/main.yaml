@@ -1,0 +1,169 @@
+# ==============================
+# 공통 패키지 + containerd + kubeadm 설치 (worker)
+# ==============================
+
+- name: Swap 비활성화
+  become: yes
+  command: swapoff -a
+  ignore_errors: yes
+
+- name: fstab의 swap 주석 처리
+  become: yes
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*\sswap\s.*)$'
+    replace: '# \1'
+
+# ---------- 커널 / sysctl 설정 ----------
+
+- name: br_netfilter 커널 모듈 로드
+  become: yes
+  modprobe:
+    name: br_netfilter
+    state: present
+
+- name: net.ipv4.ip_forward = 1 설정
+  become: yes
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    state: present
+    reload: yes
+
+- name: net.bridge.bridge-nf-call-iptables = 1 설정
+  become: yes
+  sysctl:
+    name: net.bridge.bridge-nf-call-iptables
+    value: '1'
+    state: present
+    reload: yes
+
+- name: net.bridge.bridge-nf-call-ip6tables = 1 설정
+  become: yes
+  sysctl:
+    name: net.bridge.bridge-nf-call-ip6tables
+    value: '1'
+    state: present
+    reload: yes
+
+# ---------- containerd ----------
+
+- name: 필수 패키지 설치
+  become: yes
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+    state: present
+    update_cache: yes
+
+- name: containerd 설치
+  become: yes
+  apt:
+    name: containerd
+    state: present
+
+- name: /etc/containerd 디렉토리 생성
+  become: yes
+  file:
+    path: /etc/containerd
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: containerd config 생성
+  become: yes
+  shell: |
+    containerd config default | tee /etc/containerd/config.toml >/dev/null
+  args:
+    creates: /etc/containerd/config.toml
+
+- name: containerd SystemdCgroup 적용
+  become: yes
+  replace:
+    path: /etc/containerd/config.toml
+    regexp: 'SystemdCgroup = false'
+    replace: 'SystemdCgroup = true'
+
+- name: containerd 재시작
+  become: yes
+  systemd:
+    name: containerd
+    enabled: yes
+    state: restarted
+
+# ---------- Kubernetes repo 등록 ----------
+
+- name: apt keyring 디렉토리 생성
+  become: yes
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: k8s GPG key 추가
+  become: yes
+  shell: |
+    curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key \
+      | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+  args:
+    creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+- name: Kubernetes repo 추가
+  become: yes
+  copy:
+    dest: /etc/apt/sources.list.d/kubernetes.list
+    content: |
+      deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /
+
+- name: kubeadm/kubelet/kubectl 설치
+  become: yes
+  apt:
+    name:
+      - kubeadm
+      - kubelet
+      - kubectl
+    state: present
+    update_cache: yes
+
+# ---------- Worker join ----------
+
+- name: master의 join command 가져오기
+  set_fact:
+    join_command: "{{ hostvars[groups['k8s_master'][0]].join_command }}"
+
+- name: kubeadm join 실행
+  become: yes
+  command: "{{ join_command }}"
+  args:
+    creates: /etc/kubernetes/kubelet.conf
+
+# ---------- master에 control-plane taint 다시 적용 ----------
+- name: master 노드에 control-plane taint 다시 적용
+  become: yes
+  become_user: ubuntu
+  delegate_to: "{{ groups['k8s_master'][0] }}"
+  run_once: true
+  environment:
+    KUBECONFIG: /home/ubuntu/.kube/config
+  shell: |
+    set -eux
+    kubectl taint nodes {{ groups['k8s_master'][0] }} node-role.kubernetes.io/control-plane=:NoSchedule --overwrite
+
+# ---------- worker 노드 라벨링 (devops-role) ----------
+- name: worker 노드에 devops-role 라벨 추가
+  become: yes
+  become_user: ubuntu
+  delegate_to: "{{ groups['k8s_master'][0] }}"
+  environment:
+    KUBECONFIG: /home/ubuntu/.kube/config
+  shell: |
+    set -eux
+    kubectl label node {{ inventory_hostname }} devops-role={{ devops_role }} --overwrite
+  when: inventory_hostname in groups['k8s_worker']
