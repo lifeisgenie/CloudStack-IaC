@@ -1,0 +1,13 @@
+[k8s_master]
+%{ for m in masters ~}
+${m.name} ansible_host=${m.ansible_host} ansible_port=${m.port} ansible_user=ubuntu
+%{ endfor ~}
+
+[k8s_worker]
+%{ for w in workers ~}
+${w.name} ansible_host=${w.ansible_host} ansible_port=${w.port} ansible_user=ubuntu devops_role=${w.role}
+%{ endfor ~}
+
+[all:vars]
+ansible_ssh_private_key_file=/home/ubuntu/.ssh/id_ed25519
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
