@@ -1,26 +1,28 @@
-# ==============================
-# 공통 패키지 + containerd + kubeadm 설치 (master)
-# ==============================
+# --- Swap 비활성화 ---
 
 - name: Swap 비활성화
   become: yes
   command: swapoff -a
-  ignore_errors: yes
+  ignore_errors: yes  # 이미 swap이 꺼져 있어도 에러 없이 진행
 
+# 재부팅 시 swap이 다시 켜지지 않도록 /etc/fstab 내 swap 항목을 주석 처리
 - name: fstab의 swap 주석 처리
   become: yes
   replace:
     path: /etc/fstab
     regexp: '^([^#].*\sswap\s.*)$'
-    replace: '# \1'
+    replace: '# \1' 
 
-# ---------- 커널 / sysctl 설정 ----------
+# --- 커널 모듈 / sysctl 설정 (브리지 트래픽, IP 포워딩) ---
+
+# iptables가 브리지 네트워크 트래픽을 볼 수 있도록 하는 커널 모듈
 - name: br_netfilter 모듈 로드
   become: yes
   modprobe:
     name: br_netfilter
     state: present
 
+# L3 패킷 포워딩 활성화 (노드 간 통신 허용)
 - name: net.ipv4.ip_forward = 1 설정
   become: yes
   sysctl:
@@ -29,8 +31,7 @@
     state: present
     reload: yes
 
-# 브리지 트래픽 설정 - 없다고 에러나진 않지만, k8s 베스트 프랙티스
-
+# 브리지 네트워크 트래픽이 iptables 필터링을 거치도록 설정
 - name: net.bridge.bridge-nf-call-iptables = 1 설정
   become: yes
   sysctl:
@@ -38,8 +39,9 @@
     value: '1'
     state: present
     reload: yes
-  ignore_errors: yes  # br_netfilter 모듈 없는 경우 대비
+  ignore_errors: yes  # br_netfilter 가 없을 때를 대비해서 에러 무시
 
+# IPv6 브리지 트래픽도 ip6tables 필터링을 거치도록 설정
 - name: net.bridge.bridge-nf-call-ip6tables = 1 설정
   become: yes
   sysctl:
@@ -49,8 +51,9 @@
     reload: yes
   ignore_errors: yes
 
-# ---------- containerd ----------
+# --- containerd 런타임 설치 및 설정 ---
 
+# 컨테이너 런타임 및 K8s 패키지 설치를 위한 기본 유틸 패키지들
 - name: 필수 패키지 설치
   become: yes
   apt:
@@ -61,14 +64,16 @@
       - gnupg
       - lsb-release
     state: present
-    update_cache: yes
+    update_cache: yes 
 
+# Docker 대신 사용되는 컨테이너 런타임(containerd) 설치
 - name: containerd 설치
   become: yes
   apt:
     name: containerd
     state: present
 
+# containerd 설정 파일이 위치할 디렉토리 생성
 - name: /etc/containerd 디렉토리 생성
   become: yes
   file:
@@ -78,6 +83,7 @@
     group: root
     mode: "0755"
 
+# 기본 설정을 기반으로 config.toml 생성 (이미 있으면 재생성하지 않음)
 - name: containerd config 생성
   become: yes
   shell: |
@@ -85,6 +91,7 @@
   args:
     creates: /etc/containerd/config.toml
 
+# kubelet과 containerd가 동일하게 systemd cgroup을 사용하도록 설정
 - name: containerd SystemdCgroup 적용
   become: yes
   replace:
@@ -92,6 +99,7 @@
     regexp: 'SystemdCgroup = false'
     replace: 'SystemdCgroup = true'
 
+# 설정 변경 사항을 반영하기 위해 containerd 서비스 재시작
 - name: containerd 재시작
   become: yes
   systemd:
@@ -99,8 +107,9 @@
     enabled: yes
     state: restarted
 
-# ---------- Kubernetes repo 설정 ----------
+# --- Kubernetes 패키지 저장소 및 패키지 설치 ---
 
+# K8s GPG 키를 저장할 keyring 디렉토리 생성
 - name: apt keyring 디렉토리 생성
   become: yes
   file:
@@ -110,14 +119,16 @@
     group: root
     mode: "0755"
 
+# 공식 K8s 패키지 저장소를 위한 GPG 키 추가
 - name: K8s GPG key 추가
   become: yes
   shell: |
     curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key \
       | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
   args:
-    creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg 
 
+# K8s v1.30 안정화 버전 패키지 저장소 등록
 - name: Kubernetes repo 추가
   become: yes
   copy:
@@ -125,6 +136,7 @@
     content: |
       deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /
 
+#  K8s 클러스터 초기화/관리용 필수 바이너리 설치
 - name: kubeadm/kubelet/kubectl 설치
   become: yes
   apt:
@@ -135,8 +147,11 @@
     state: present
     update_cache: yes
 
-# ---------- kubeadm init ----------
+# --- kubeadm init (Master 초기화) ---
 
+# admin.conf가 없을 때만 kubeadm init 실행 (idempotent 보장)
+# Calico와 호환되는 Pod CIDR(192.168.0.0/16) 사용
+# CPU 코어 수 부족 경고는 무시하고 진행
 - name: kubeadm init 실행
   become: yes
   command: >
@@ -148,8 +163,10 @@
     creates: /etc/kubernetes/admin.conf
   register: init
 
-# ---------- kubeconfig 설정 ----------
 
+# --- kubeconfig 설정 (ubuntu 사용자) ---
+
+# 비루트 계정(ubuntu)에서 kubectl 사용을 위한 .kube 디렉토리 생성
 - name: ubuntu kubeconfig 디렉토리 생성
   become: yes
   file:
@@ -159,6 +176,7 @@
     group: ubuntu
     mode: "0700"
 
+# kubeadm이 생성한 관리자 kubeconfig를 ubuntu 계정으로 복사
 - name: admin.conf 복사
   become: yes
   copy:
@@ -169,8 +187,9 @@
     mode: "0600"
     remote_src: yes
 
-# ---------- CNI 설치 - Calico ----------
+# --- CNI 설치 (Calico) ---
 
+# Pod 간 네트워크 통신을 담당하는 Calico CNI 설치
 - name: Calico 설치
   become: yes
   become_user: ubuntu
@@ -178,15 +197,10 @@
     KUBECONFIG: /home/ubuntu/.kube/config
   shell: |
     kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.31.1/manifests/calico.yaml
-    
-- name: Calico Ready 확인
-  shell: kubectl -n calico-system wait --for=condition=available deployment/calico-kube-controllers --timeout=120s
-  changed_when: false
-  become_user: ubuntu
-  environment:
-    KUBECONFIG: /home/ubuntu/.kube/config
 
-# ---------- Local Path Provisioner 설치 ----------
+# --- Local Path Provisioner 설치 (기본 StorageClass) ---
+
+# 노드 로컬 디스크를 사용하는 간단한 동적 볼륨 프로비저너 설치
 - name: local-path-provisioner 설치
   become: yes
   become_user: ubuntu
@@ -195,6 +209,7 @@
   shell: |
     kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
 
+# local-path StorageClass를 기본 StorageClass로 설정 (PVC 생성 시 자동 사용)
 - name: local-path-provisioner를 default StorageClass로 지정
   become: yes
   become_user: ubuntu
@@ -204,20 +219,9 @@
     kubectl patch storageclass local-path \
       -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
-# ---------- MetalLB 설치 및 설정 ----------
+# --- MetalLB 설치 및 L2 LoadBalancer 구성 ---
 
-# 1) control-plane/master taint 제거 (single-node cluster 용)
-- name: control-plane/master taint 제거 (single-node cluster 용)
-  become: yes
-  become_user: ubuntu
-  environment:
-    KUBECONFIG: /home/ubuntu/.kube/config
-  shell: |
-    set -eux
-    kubectl taint nodes --all node-role.kubernetes.io/control-plane- || true
-    kubectl taint nodes --all node-role.kubernetes.io/master- || true
-
-# 2) MetalLB 메인 매니페스트 적용
+# Bare Metal 환경에서 LoadBalancer 타입 서비스를 지원하기 위한 MetalLB 설치
 - name: MetalLB 설치
   become: yes
   become_user: ubuntu
@@ -226,7 +230,7 @@
   shell: |
     kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml
 
-# 3) MetalLB controller Ready 대기 (webhook은 기다리지 않음)
+# MetalLB 컨트롤러가 Ready 상태가 될 때까지 대기 (상태 확인용, 변경 없음)
 - name: MetalLB controller Ready 대기
   become: yes
   become_user: ubuntu
@@ -236,9 +240,10 @@
     set -eux
     kubectl -n metallb-system wait --for=condition=available deployment/controller --timeout=180s
   register: metallb_wait
-  changed_when: false   # 상태 체크용
+  changed_when: false
 
-# 4) IPAddressPool + L2Advertisement YAML 생성
+
+# MetalLB가 사용할 External IP 풀(192.168.100.200-250)과 L2 브로드캐스팅 설정 생성
 - name: MetalLB IP Pool 구성 파일 생성
   become: yes
   become_user: ubuntu
@@ -263,7 +268,7 @@
         name: l2adv
         namespace: metallb-system
 
-# 5) IP Pool 적용 (controller 대기가 성공했을 때만)
+# MetalLB 컨트롤러가 정상 동작할 때만 IP Pool/L2Advertisement 설정 적용
 - name: MetalLB IP Pool 적용
   become: yes
   become_user: ubuntu
@@ -272,13 +277,16 @@
   command: kubectl apply -f /home/ubuntu/metallb.yaml
   when: metallb_wait.rc == 0
 
-# ---------- Worker join 명령 생성 ----------
+# --- Worker 노드용 kubeadm join 명령 생성 ---
 
+# worker 노드가 클러스터에 합류할 수 있는 join 명령 생성
 - name: kubeadm join 명령 생성
   become: yes
   command: kubeadm token create --print-join-command
   register: join_cmd
 
+# containerd 소켓 / NumCPU 에러 무시 옵션까지 포함한 최종 join 명령을 fact로 저장
+# worker role에서 hostvars[]를 통해 이 값을 읽어서 사용하게 됨
 - name: join command fact 저장
   set_fact:
     join_command: "{{ join_cmd.stdout }} --cri-socket unix:///run/containerd/containerd.sock --ignore-preflight-errors=NumCPU"

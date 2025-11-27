@@ -1,12 +1,12 @@
-# ==============================
-# 공통 패키지 + containerd + kubeadm 설치 (worker)
-# ==============================
+# --- Swap 비활성화 (K8s 요구사항) ---
 
+# 이미 swap이 꺼져 있어도 에러 없이 진행
 - name: Swap 비활성화
   become: yes
   command: swapoff -a
   ignore_errors: yes
 
+# 재부팅 시 swap이 다시 켜지지 않도록 /etc/fstab 내 swap 항목을 주석 처리
 - name: fstab의 swap 주석 처리
   become: yes
   replace:
@@ -14,14 +14,16 @@
     regexp: '^([^#].*\sswap\s.*)$'
     replace: '# \1'
 
-# ---------- 커널 / sysctl 설정 ----------
+# --- 커널 모듈 / sysctl 설정 (브리지 트래픽, IP 포워딩) ---
 
+# 브리지 트래픽이 iptables에 포착되도록 br_netfilter 모듈 로드
 - name: br_netfilter 커널 모듈 로드
   become: yes
   modprobe:
     name: br_netfilter
     state: present
 
+# L3 패킷 포워딩 활성화
 - name: net.ipv4.ip_forward = 1 설정
   become: yes
   sysctl:
@@ -30,6 +32,7 @@
     state: present
     reload: yes
 
+# 브리지 네트워크 트래픽이 iptables를 통해 필터링되도록 설정
 - name: net.bridge.bridge-nf-call-iptables = 1 설정
   become: yes
   sysctl:
@@ -38,6 +41,7 @@
     state: present
     reload: yes
 
+# IPv6 브리지 트래픽이 ip6tables를 통해 필터링되도록 설정
 - name: net.bridge.bridge-nf-call-ip6tables = 1 설정
   become: yes
   sysctl:
@@ -46,8 +50,9 @@
     state: present
     reload: yes
 
-# ---------- containerd ----------
+# --- containerd 런타임 설치 및 설정 ---
 
+# containerd 및 K8s 패키지 설치를 위한 기본 유틸 패키지들
 - name: 필수 패키지 설치
   become: yes
   apt:
@@ -60,12 +65,14 @@
     state: present
     update_cache: yes
 
+# containerd 설치
 - name: containerd 설치
   become: yes
   apt:
     name: containerd
     state: present
 
+# containerd 설정 파일 디렉토리 생성
 - name: /etc/containerd 디렉토리 생성
   become: yes
   file:
@@ -75,6 +82,7 @@
     group: root
     mode: "0755"
 
+# 기본 config.toml 생성 (이미 있으면 재생성 안 함)
 - name: containerd config 생성
   become: yes
   shell: |
@@ -82,6 +90,7 @@
   args:
     creates: /etc/containerd/config.toml
 
+# systemd cgroup 사용으로 kubelet과 cgroup 드라이버 일치
 - name: containerd SystemdCgroup 적용
   become: yes
   replace:
@@ -89,6 +98,7 @@
     regexp: 'SystemdCgroup = false'
     replace: 'SystemdCgroup = true'
 
+# 설정 반영을 위해 containerd 재시작
 - name: containerd 재시작
   become: yes
   systemd:
@@ -96,8 +106,9 @@
     enabled: yes
     state: restarted
 
-# ---------- Kubernetes repo 등록 ----------
+# --- Kubernetes 패키지 저장소 및 패키지 설치 ---
 
+# K8s GPG 키 저장용 디렉토리 생성
 - name: apt keyring 디렉토리 생성
   become: yes
   file:
@@ -107,6 +118,7 @@
     group: root
     mode: "0755"
 
+# 공식 K8s 패키지 저장소용 GPG 키 추가
 - name: k8s GPG key 추가
   become: yes
   shell: |
@@ -115,6 +127,7 @@
   args:
     creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 
+# K8s v1.30 저장소 등록
 - name: Kubernetes repo 추가
   become: yes
   copy:
@@ -122,6 +135,7 @@
     content: |
       deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /
 
+# Worker 노드에서도 kubeadm/kubelet/kubectl 설치 (join 및 관리용)
 - name: kubeadm/kubelet/kubectl 설치
   become: yes
   apt:
@@ -132,19 +146,22 @@
     state: present
     update_cache: yes
 
-# ---------- Worker join ----------
+# --- Worker를 Master 클러스터에 Join ---
 
+# master role에서 set_fact로 저장한 join_command를 hostvars를 통해 읽어옴
 - name: master의 join command 가져오기
   set_fact:
     join_command: "{{ hostvars[groups['k8s_master'][0]].join_command }}"
 
+# 이미 join된 노드는 /etc/kubernetes/kubelet.conf 가 존재하므로 재실행 방지 (idempotent)
 - name: kubeadm join 실행
   become: yes
   command: "{{ join_command }}"
   args:
     creates: /etc/kubernetes/kubelet.conf
 
-# ---------- master에 control-plane taint 다시 적용 ----------
+# --- master에 control-plane taint 다시 적용 ---
+
 - name: master 노드에 control-plane taint 다시 적용
   become: yes
   become_user: ubuntu
@@ -156,7 +173,10 @@
     set -eux
     kubectl taint nodes {{ groups['k8s_master'][0] }} node-role.kubernetes.io/control-plane=:NoSchedule --overwrite
 
-# ---------- worker 노드 라벨링 (devops-role) ----------
+# --- Worker 노드 라벨링 (devops-role) ---
+
+# Terraform inventory에서 내려준 devops_role 값(jenkins/gitlab 등)을 노드 라벨로 부여
+# 향후 네임스페이스/노드셀렉터/톨러레이션 기반으로 워크로드 배치 정책 구성 가능
 - name: worker 노드에 devops-role 라벨 추가
   become: yes
   become_user: ubuntu
