@@ -16,7 +16,7 @@ data "cloudstack_zone" "dku" {
   }
 }
 
-data "cloudstack_service_offering" "medium" {
+data "cloudstack_service_offering" "large" {
   filter {
     name  = "name"
     value = var.service_offering_name
@@ -66,7 +66,7 @@ resource "cloudstack_instance" "master" {
   count = var.master_count
 
   name             = "master-${var.student_id}-${count.index + 1}"
-  service_offering = data.cloudstack_service_offering.medium.id
+  service_offering = data.cloudstack_service_offering.large.id
   network_id       = cloudstack_network.isolated.id
   template         = data.cloudstack_template.ubuntu.id
   zone             = data.cloudstack_zone.dku.name
@@ -81,7 +81,7 @@ resource "cloudstack_instance" "worker" {
   count = length(var.worker_roles)
 
   name             = "worker-${var.student_id}-${count.index + 1}"
-  service_offering = data.cloudstack_service_offering.medium.id
+  service_offering = data.cloudstack_service_offering.large.id
   network_id       = cloudstack_network.isolated.id
   template         = data.cloudstack_template.ubuntu.id
   zone             = data.cloudstack_zone.dku.name
