@@ -1,0 +1,5 @@
+kind: ConfigMap
+metadata:
+  name: jenkins-config
+data:
+  JAVA_OPTS: "-Djenkins.install.runSetupWizard=false"
