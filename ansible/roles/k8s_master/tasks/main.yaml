@@ -187,6 +187,20 @@
     mode: "0600"
     remote_src: yes
 
+# --- master 노드의 기본 control-plane taint 임시 제거 (시스템/Addon Pod 스케줄링용) ---
+
+- name: master 노드의 control-plane taint 임시 제거
+  become: yes
+  become_user: ubuntu
+  delegate_to: "{{ groups['k8s_master'][0] }}"
+  run_once: true
+  environment:
+    KUBECONFIG: /home/ubuntu/.kube/config
+  shell: |
+    set -eux
+    # 이미 없는 경우에도 에러 없이 넘어가도록 || true
+    kubectl taint nodes {{ groups['k8s_master'][0] }} node-role.kubernetes.io/control-plane- || true
+
 # --- CNI 설치 (Calico) ---
 
 # Pod 간 네트워크 통신을 담당하는 Calico CNI 설치
@@ -198,26 +212,29 @@
   shell: |
     kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.31.1/manifests/calico.yaml
 
-# --- Local Path Provisioner 설치 (기본 StorageClass) ---
+# --- Local Path Provisioner 설치 (공식 v0.0.32) ---
 
-# 노드 로컬 디스크를 사용하는 간단한 동적 볼륨 프로비저너 설치
-- name: local-path-provisioner 설치
+- name: local-path-provisioner 공식 manifest 적용
   become: yes
   become_user: ubuntu
+  delegate_to: "{{ groups['k8s_master'][0] }}"
   environment:
     KUBECONFIG: /home/ubuntu/.kube/config
   shell: |
-    kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
+    set -eux
+    kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.32/deploy/local-path-storage.yaml
 
-# local-path StorageClass를 기본 StorageClass로 설정 (PVC 생성 시 자동 사용)
-- name: local-path-provisioner를 default StorageClass로 지정
+# StorageClass를 default로 설정
+- name: local-path StorageClass를 default로 설정
   become: yes
   become_user: ubuntu
+  delegate_to: "{{ groups['k8s_master'][0] }}"
   environment:
     KUBECONFIG: /home/ubuntu/.kube/config
   shell: |
+    set -eux
     kubectl patch storageclass local-path \
-      -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+      -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
 # --- MetalLB 설치 및 L2 LoadBalancer 구성 ---
 
@@ -259,7 +276,7 @@
         namespace: metallb-system
       spec:
         addresses:
-        - 192.168.100.200-192.168.100.250
+        - 192.168.100.230-192.168.100.250
 
       ---
       apiVersion: metallb.io/v1beta1

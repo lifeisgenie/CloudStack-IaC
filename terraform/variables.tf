@@ -13,9 +13,9 @@ variable "network_cidr" {
 
 # CloudStack 리소스 이름
 variable "service_offering_name" {
-  description = "VM Service Offering 이름 (예: Medium)"
+  description = "VM Service Offering 이름 (예: Large)"
   type        = string
-  default     = "Medium"
+  default     = "Large"
 }
 
 variable "template_name" {
