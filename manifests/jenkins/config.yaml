@@ -1,5 +1,7 @@
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: jenkins-config
+  namespace: default
 data:
   JAVA_OPTS: "-Djenkins.install.runSetupWizard=false"
