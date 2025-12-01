@@ -198,8 +198,8 @@
     KUBECONFIG: /home/ubuntu/.kube/config
   shell: |
     set -eux
-    # 이미 없는 경우에도 에러 없이 넘어가도록 || true
-    kubectl taint nodes {{ groups['k8s_master'][0] }} node-role.kubernetes.io/control-plane- || true
+    kubectl taint nodes {{ groups['k8s_master'][0] }} node-role.kubernetes.io/control-plane:NoSchedule- || true
+    kubectl taint nodes {{ groups['k8s_master'][0] }} node-role.kubernetes.io/master:NoSchedule- || true
 
 # --- CNI 설치 (Calico) ---
 
@@ -259,7 +259,6 @@
   register: metallb_wait
   changed_when: false
 
-
 # MetalLB가 사용할 External IP 풀(192.168.100.200-250)과 L2 브로드캐스팅 설정 생성
 - name: MetalLB IP Pool 구성 파일 생성
   become: yes
@@ -284,6 +283,9 @@
       metadata:
         name: l2adv
         namespace: metallb-system
+      spec:
+        ipAddressPools:
+        - default-address-pool
 
 # MetalLB 컨트롤러가 정상 동작할 때만 IP Pool/L2Advertisement 설정 적용
 - name: MetalLB IP Pool 적용
