@@ -16,10 +16,26 @@ data "cloudstack_zone" "dku" {
   }
 }
 
-data "cloudstack_service_offering" "large" {
+data "cloudstack_service_offering" "medium" {
+  filter {
+    name  = "name"          
+    value = "Medium"         
+  }
+}
+
+# 기존 Medium (또는 Large)
+data "cloudstack_service_offering" "worker_default" {
   filter {
     name  = "name"
-    value = var.service_offering_name
+    value = var.service_offering_name   # 예: "Medium"
+  }
+}
+
+# XLarge 전용 (worker-2용)
+data "cloudstack_service_offering" "worker_xlarge" {
+  filter {
+    name  = "name"
+    value = "XLarge"   # CloudStack에 등록된 이름 그대로
   }
 }
 
@@ -66,7 +82,7 @@ resource "cloudstack_instance" "master" {
   count = var.master_count
 
   name             = "master-${var.student_id}-${count.index + 1}"
-  service_offering = data.cloudstack_service_offering.large.id
+  service_offering = data.cloudstack_service_offering.medium.id
   network_id       = cloudstack_network.isolated.id
   template         = data.cloudstack_template.ubuntu.id
   zone             = data.cloudstack_zone.dku.name
@@ -76,15 +92,17 @@ resource "cloudstack_instance" "master" {
   user_data      = local.base_cloud_init
 }
 
-# Worker 개수 = worker_roles 길이
 resource "cloudstack_instance" "worker" {
   count = length(var.worker_roles)
 
-  name             = "worker-${var.student_id}-${count.index + 1}"
-  service_offering = data.cloudstack_service_offering.large.id
-  network_id       = cloudstack_network.isolated.id
-  template         = data.cloudstack_template.ubuntu.id
-  zone             = data.cloudstack_zone.dku.name
+  name = "worker-${var.student_id}-${count.index + 1}"
+
+  # worker-1 → default, worker-2 → XLarge
+  service_offering = count.index == 1 ? data.cloudstack_service_offering.worker_xlarge.id : data.cloudstack_service_offering.worker_default.id
+
+  network_id = cloudstack_network.isolated.id
+  template   = data.cloudstack_template.ubuntu.id
+  zone       = data.cloudstack_zone.dku.name
 
   root_disk_size = var.root_disk_size
   expunge        = true

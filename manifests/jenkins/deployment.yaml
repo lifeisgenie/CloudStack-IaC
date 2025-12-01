@@ -13,6 +13,8 @@ spec:
       labels:
         app: jenkins
     spec:
+      nodeSelector:
+        devops-role: jenkins
       containers:
         - name: jenkins
           image: jenkins/jenkins:lts-jdk17

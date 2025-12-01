@@ -1,14 +1,14 @@
 {
   "version": 4,
   "terraform_version": "1.14.0",
-  "serial": 123,
+  "serial": 16,
   "lineage": "7063f11e-b14f-38bf-319f-395e5e7d5b97",
   "outputs": {
     "all_private_ips": {
       "value": [
-        "192.168.100.241",
-        "192.168.100.31",
-        "192.168.100.116"
+        "192.168.100.108",
+        "192.168.100.100",
+        "192.168.100.189"
       ],
       "type": [
         "tuple",
@@ -82,7 +82,7 @@
     },
     "master_private_ips": {
       "value": [
-        "192.168.100.241"
+        "192.168.100.108"
       ],
       "type": [
         "tuple",
@@ -97,8 +97,8 @@
     },
     "worker_private_ips": {
       "value": [
-        "192.168.100.31",
-        "192.168.100.116"
+        "192.168.100.100",
+        "192.168.100.189"
       ],
       "type": [
         "tuple",
@@ -113,21 +113,21 @@
     {
       "mode": "data",
       "type": "cloudstack_service_offering",
-      "name": "medium",
+      "name": "large",
       "provider": "provider[\"registry.terraform.io/cloudstack/cloudstack\"]",
       "instances": [
         {
           "schema_version": 0,
           "attributes": {
-            "display_text": "Medium",
+            "display_text": "XLarge",
             "filter": [
               {
                 "name": "name",
-                "value": "Medium"
+                "value": "Large"
               }
             ],
-            "id": "4ef06575-4528-437c-a104-1efafeac3766",
-            "name": "Medium"
+            "id": "07e7d23a-af82-4e12-9757-efd504d58ad3",
+            "name": "XLarge"
           },
           "sensitive_attributes": [],
           "identity_schema_version": 0
@@ -201,9 +201,9 @@
         {
           "schema_version": 0,
           "attributes": {
-            "id": "b7d325df-8b6a-4797-ac02-1f4a564f9def",
+            "id": "c6626496-468b-4558-9cb0-f13a3bb821fe",
             "managed": false,
-            "network_id": "b7d325df-8b6a-4797-ac02-1f4a564f9def",
+            "network_id": "c6626496-468b-4558-9cb0-f13a3bb821fe",
             "parallelism": 2,
             "rule": [
               {
@@ -215,7 +215,7 @@
                 "ports": [],
                 "protocol": "all",
                 "uuids": {
-                  "all": "5e310da0-a738-4662-94a7-258208172178"
+                  "all": "f93d6c1d-25aa-4bef-ac9e-20fe15f66a77"
                 }
               }
             ]
@@ -255,7 +255,7 @@
                 ],
                 "protocol": "tcp",
                 "uuids": {
-                  "30022": "a60434b5-0696-4d37-8851-56ae7ed14291"
+                  "30022": "8a37418b-4b14-4b01-8295-47c37deabd7c"
                 }
               },
               {
@@ -269,7 +269,7 @@
                 ],
                 "protocol": "tcp",
                 "uuids": {
-                  "30080": "76362400-7be8-4fb0-9e7e-40cf7cc90062"
+                  "30080": "f0e22f6a-1c04-4691-8669-de4294be0522"
                 }
               },
               {
@@ -283,7 +283,7 @@
                 ],
                 "protocol": "tcp",
                 "uuids": {
-                  "3022": "8053b2ae-0fe3-4515-88e7-e564db5fba2c"
+                  "3022": "8c91467e-fdc0-4309-ab6b-ca4042f1efdd"
                 }
               },
               {
@@ -297,7 +297,7 @@
                 ],
                 "protocol": "tcp",
                 "uuids": {
-                  "3023": "97d6f567-6800-47b8-8520-26ac22c1944e"
+                  "3023": "289349a3-82b3-401b-b3f7-cd03481fc5bb"
                 }
               },
               {
@@ -311,7 +311,7 @@
                 ],
                 "protocol": "tcp",
                 "uuids": {
-                  "3024": "0621a17b-baa2-4037-8572-46c669cb82bc"
+                  "3024": "8164f583-d8e7-4dbe-846f-7bc6a344d557"
                 }
               },
               {
@@ -325,7 +325,7 @@
                 ],
                 "protocol": "tcp",
                 "uuids": {
-                  "30500": "db1069e6-70fe-4a0a-9396-7b90359a8fc9"
+                  "30500": "f0884a27-2566-46de-831c-56502e45ec6e"
                 }
               },
               {
@@ -339,19 +339,19 @@
                 ],
                 "protocol": "tcp",
                 "uuids": {
-                  "30880": "b2f77ae1-1ade-45dd-b191-0178b4fd7b41"
+                  "30880": "24665e55-7f13-4168-837b-6448d95a5010"
                 }
               }
             ]
           },
           "sensitive_attributes": [],
           "identity_schema_version": 0,
+          "private": "bnVsbA==",
           "dependencies": [
             "cloudstack_instance.master",
             "cloudstack_instance.worker",
             "cloudstack_ipaddress.public",
             "cloudstack_network.isolated",
-            "data.cloudstack_service_offering.medium",
             "data.cloudstack_template.ubuntu",
             "data.cloudstack_zone.dku"
           ]
@@ -376,11 +376,11 @@
             "expunge": true,
             "group": "",
             "host_id": null,
-            "id": "3284686d-df6b-4158-a945-2cc383541031",
-            "ip_address": "192.168.100.241",
+            "id": "743eff1d-e5f6-4e52-a974-0b3ea81b3916",
+            "ip_address": "192.168.100.108",
             "keypair": null,
             "name": "master-32204837-1",
-            "network_id": "b7d325df-8b6a-4797-ac02-1f4a564f9def",
+            "network_id": "c6626496-468b-4558-9cb0-f13a3bb821fe",
             "nicnetworklist": null,
             "pod_id": null,
             "project": "",
@@ -388,7 +388,7 @@
             "root_disk_size": 20,
             "security_group_ids": null,
             "security_group_names": null,
-            "service_offering": "4ef06575-4528-437c-a104-1efafeac3766",
+            "service_offering": "164cabda-4e0a-435e-b413-5eb42e3197c1",
             "start_vm": true,
             "tags": {},
             "template": "b335d8d4-02d1-4b30-9c9d-df0b05903055",
@@ -401,7 +401,6 @@
           "private": "bnVsbA==",
           "dependencies": [
             "cloudstack_network.isolated",
-            "data.cloudstack_service_offering.medium",
             "data.cloudstack_template.ubuntu",
             "data.cloudstack_zone.dku"
           ]
@@ -426,11 +425,11 @@
             "expunge": true,
             "group": "",
             "host_id": null,
-            "id": "739bd28e-434d-483f-8641-afc93ab6fd31",
-            "ip_address": "192.168.100.31",
+            "id": "2f84d8f0-ab67-4c4d-b259-b7381dad2d99",
+            "ip_address": "192.168.100.100",
             "keypair": null,
             "name": "worker-32204837-1",
-            "network_id": "b7d325df-8b6a-4797-ac02-1f4a564f9def",
+            "network_id": "c6626496-468b-4558-9cb0-f13a3bb821fe",
             "nicnetworklist": null,
             "pod_id": null,
             "project": "",
@@ -438,7 +437,7 @@
             "root_disk_size": 20,
             "security_group_ids": null,
             "security_group_names": null,
-            "service_offering": "4ef06575-4528-437c-a104-1efafeac3766",
+            "service_offering": "164cabda-4e0a-435e-b413-5eb42e3197c1",
             "start_vm": true,
             "tags": {},
             "template": "b335d8d4-02d1-4b30-9c9d-df0b05903055",
@@ -451,7 +450,6 @@
           "private": "bnVsbA==",
           "dependencies": [
             "cloudstack_network.isolated",
-            "data.cloudstack_service_offering.medium",
             "data.cloudstack_template.ubuntu",
             "data.cloudstack_zone.dku"
           ]
@@ -468,11 +466,11 @@
             "expunge": true,
             "group": "",
             "host_id": null,
-            "id": "72a8d713-9c03-4f46-926e-4ceeb6a26c3f",
-            "ip_address": "192.168.100.116",
+            "id": "99956114-f3c1-436d-8f4c-ffcfe65e73b5",
+            "ip_address": "192.168.100.189",
             "keypair": null,
             "name": "worker-32204837-2",
-            "network_id": "b7d325df-8b6a-4797-ac02-1f4a564f9def",
+            "network_id": "c6626496-468b-4558-9cb0-f13a3bb821fe",
             "nicnetworklist": null,
             "pod_id": null,
             "project": "",
@@ -480,7 +478,7 @@
             "root_disk_size": 20,
             "security_group_ids": null,
             "security_group_names": null,
-            "service_offering": "4ef06575-4528-437c-a104-1efafeac3766",
+            "service_offering": "164cabda-4e0a-435e-b413-5eb42e3197c1",
             "start_vm": true,
             "tags": {},
             "template": "b335d8d4-02d1-4b30-9c9d-df0b05903055",
@@ -493,7 +491,6 @@
           "private": "bnVsbA==",
           "dependencies": [
             "cloudstack_network.isolated",
-            "data.cloudstack_service_offering.medium",
             "data.cloudstack_template.ubuntu",
             "data.cloudstack_zone.dku"
           ]
@@ -513,7 +510,7 @@
             "ip_address": "10.0.1.56",
             "is_portable": false,
             "is_source_nat": true,
-            "network_id": "b7d325df-8b6a-4797-ac02-1f4a564f9def",
+            "network_id": "c6626496-468b-4558-9cb0-f13a3bb821fe",
             "project": "",
             "tags": {},
             "vpc_id": null,
@@ -521,6 +518,7 @@
           },
           "sensitive_attributes": [],
           "identity_schema_version": 0,
+          "private": "bnVsbA==",
           "dependencies": [
             "cloudstack_network.isolated",
             "data.cloudstack_zone.dku"
@@ -542,7 +540,7 @@
             "display_text": "Terraform Isolated Network",
             "endip": null,
             "gateway": "192.168.100.1",
-            "id": "b7d325df-8b6a-4797-ac02-1f4a564f9def",
+            "id": "c6626496-468b-4558-9cb0-f13a3bb821fe",
             "name": "terraform-32204837",
             "network_domain": "cs3bdku.kloud.internal",
             "network_offering": "DefaultIsolatedNetworkOfferingWithSourceNatService",
@@ -558,6 +556,7 @@
           },
           "sensitive_attributes": [],
           "identity_schema_version": 0,
+          "private": "bnVsbA==",
           "dependencies": [
             "data.cloudstack_zone.dku"
           ]
@@ -579,8 +578,8 @@
                 "private_port": 80,
                 "protocol": "tcp",
                 "public_port": 30080,
-                "uuid": "e82f3d4f-95b1-4eed-b3a7-067a99ab10f6",
-                "virtual_machine_id": "739bd28e-434d-483f-8641-afc93ab6fd31",
+                "uuid": "2dfc1168-bd7c-47e3-ba31-9abf8a55c807",
+                "virtual_machine_id": "2f84d8f0-ab67-4c4d-b259-b7381dad2d99",
                 "vm_guest_ip": ""
               }
             ],
@@ -596,7 +595,6 @@
             "cloudstack_instance.worker",
             "cloudstack_ipaddress.public",
             "cloudstack_network.isolated",
-            "data.cloudstack_service_offering.medium",
             "data.cloudstack_template.ubuntu",
             "data.cloudstack_zone.dku"
           ]
@@ -610,8 +608,8 @@
                 "private_port": 22,
                 "protocol": "tcp",
                 "public_port": 30022,
-                "uuid": "63099c6a-b801-45de-afc5-3aedcbbf2a29",
-                "virtual_machine_id": "739bd28e-434d-483f-8641-afc93ab6fd31",
+                "uuid": "cbe18575-5bfb-46a2-9dba-a8806263e40d",
+                "virtual_machine_id": "2f84d8f0-ab67-4c4d-b259-b7381dad2d99",
                 "vm_guest_ip": ""
               }
             ],
@@ -627,7 +625,6 @@
             "cloudstack_instance.worker",
             "cloudstack_ipaddress.public",
             "cloudstack_network.isolated",
-            "data.cloudstack_service_offering.medium",
             "data.cloudstack_template.ubuntu",
             "data.cloudstack_zone.dku"
           ]
@@ -641,8 +638,8 @@
                 "private_port": 8080,
                 "protocol": "tcp",
                 "public_port": 30880,
-                "uuid": "6dfb0f2a-d3b9-4734-9fcd-720af00531b7",
-                "virtual_machine_id": "739bd28e-434d-483f-8641-afc93ab6fd31",
+                "uuid": "a55c3bdd-09f7-4eb2-ad70-816ee46d1ef7",
+                "virtual_machine_id": "2f84d8f0-ab67-4c4d-b259-b7381dad2d99",
                 "vm_guest_ip": ""
               }
             ],
@@ -658,7 +655,6 @@
             "cloudstack_instance.worker",
             "cloudstack_ipaddress.public",
             "cloudstack_network.isolated",
-            "data.cloudstack_service_offering.medium",
             "data.cloudstack_template.ubuntu",
             "data.cloudstack_zone.dku"
           ]
@@ -672,8 +668,8 @@
                 "private_port": 5000,
                 "protocol": "tcp",
                 "public_port": 30500,
-                "uuid": "041e4cbf-d1f3-4b73-b4d6-350baeffea45",
-                "virtual_machine_id": "739bd28e-434d-483f-8641-afc93ab6fd31",
+                "uuid": "402b1c1e-f2bc-471b-802a-9274cbd62fa2",
+                "virtual_machine_id": "2f84d8f0-ab67-4c4d-b259-b7381dad2d99",
                 "vm_guest_ip": ""
               }
             ],
@@ -689,7 +685,6 @@
             "cloudstack_instance.worker",
             "cloudstack_ipaddress.public",
             "cloudstack_network.isolated",
-            "data.cloudstack_service_offering.medium",
             "data.cloudstack_template.ubuntu",
             "data.cloudstack_zone.dku"
           ]
@@ -711,8 +706,8 @@
                 "private_port": 22,
                 "protocol": "tcp",
                 "public_port": 3022,
-                "uuid": "af814172-0480-4523-aca5-addcc3258b65",
-                "virtual_machine_id": "3284686d-df6b-4158-a945-2cc383541031",
+                "uuid": "e94c3ada-9cc7-4af3-8bf6-389b04b76aaa",
+                "virtual_machine_id": "743eff1d-e5f6-4e52-a974-0b3ea81b3916",
                 "vm_guest_ip": ""
               }
             ],
@@ -729,7 +724,6 @@
             "cloudstack_instance.worker",
             "cloudstack_ipaddress.public",
             "cloudstack_network.isolated",
-            "data.cloudstack_service_offering.medium",
             "data.cloudstack_template.ubuntu",
             "data.cloudstack_zone.dku"
           ]
@@ -743,8 +737,8 @@
                 "private_port": 22,
                 "protocol": "tcp",
                 "public_port": 3023,
-                "uuid": "394e1234-cb18-496f-bc09-e9aaec32cffb",
-                "virtual_machine_id": "739bd28e-434d-483f-8641-afc93ab6fd31",
+                "uuid": "57ec47a2-cf15-4095-9b9d-510be9f686cc",
+                "virtual_machine_id": "2f84d8f0-ab67-4c4d-b259-b7381dad2d99",
                 "vm_guest_ip": ""
               }
             ],
@@ -761,7 +755,6 @@
             "cloudstack_instance.worker",
             "cloudstack_ipaddress.public",
             "cloudstack_network.isolated",
-            "data.cloudstack_service_offering.medium",
             "data.cloudstack_template.ubuntu",
             "data.cloudstack_zone.dku"
           ]
@@ -775,8 +768,8 @@
                 "private_port": 22,
                 "protocol": "tcp",
                 "public_port": 3024,
-                "uuid": "e39e4b6e-42f4-4d14-9fac-38113fa84399",
-                "virtual_machine_id": "72a8d713-9c03-4f46-926e-4ceeb6a26c3f",
+                "uuid": "92701ec3-d331-4542-98fa-df5ca0c761ba",
+                "virtual_machine_id": "99956114-f3c1-436d-8f4c-ffcfe65e73b5",
                 "vm_guest_ip": ""
               }
             ],
@@ -793,7 +786,6 @@
             "cloudstack_instance.worker",
             "cloudstack_ipaddress.public",
             "cloudstack_network.isolated",
-            "data.cloudstack_service_offering.medium",
             "data.cloudstack_template.ubuntu",
             "data.cloudstack_zone.dku"
           ]
@@ -838,7 +830,6 @@
             "cloudstack_instance.worker",
             "cloudstack_ipaddress.public",
             "cloudstack_network.isolated",
-            "data.cloudstack_service_offering.medium",
             "data.cloudstack_template.ubuntu",
             "data.cloudstack_zone.dku"
           ]

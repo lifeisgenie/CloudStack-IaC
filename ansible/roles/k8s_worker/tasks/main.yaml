@@ -146,6 +146,12 @@
     state: present
     update_cache: yes
 
+# --- kubeadm join 전에 OS hostname을 inventory_hostname으로 통일 ---
+- name: 워커 호스트네임을 inventory_hostname으로 통일
+  become: yes
+  hostname:
+    name: "{{ inventory_hostname }}"
+
 # --- Worker를 Master 클러스터에 Join ---
 
 # master role에서 set_fact로 저장한 join_command를 hostvars를 통해 읽어옴
@@ -185,5 +191,5 @@
     KUBECONFIG: /home/ubuntu/.kube/config
   shell: |
     set -eux
-    kubectl label node {{ inventory_hostname }} devops-role={{ devops_role }} --overwrite
+    kubectl label node {{ hostvars[inventory_hostname].ansible_hostname }} devops-role={{ devops_role }} --overwrite
   when: inventory_hostname in groups['k8s_worker']
