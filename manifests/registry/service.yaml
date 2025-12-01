@@ -11,3 +11,4 @@ spec:
     - name: https
       port: 5000
       targetPort: 5000
+      nodePort: 32500
