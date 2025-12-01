@@ -114,10 +114,10 @@ resource "cloudstack_instance" "worker" {
 # 반복되는 포트포워딩 정보를 리스트로 정의
 locals {
   service_forward_rules = [
-    { name = "jenkins_http", private = 8080, public = 30880 }, # Jenkins
-    { name = "gitlab_ssh",   private = 22,   public = 30022 }, # GitLab SSH
-    { name = "gitlab_http",  private = 80,   public = 30080 }, # GitLab HTTP
-    { name = "registry",     private = 5000, public = 30500 }, # Docker Registry
+    { name = "jenkins_http", private = 32080, public = 30880 }, # Jenkins
+    { name = "gitlab_http",  private = 32081, public = 30080 }, # GitLab SSH
+    { name = "gitlab_ssh",   private = 32022, public = 30022 }, # GitLab HTTP
+    { name = "registry",     private = 32500, public = 30500 }, # Docker Registry
   ]
 }
 
