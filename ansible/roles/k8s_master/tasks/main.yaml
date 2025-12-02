@@ -147,6 +147,12 @@
     state: present
     update_cache: yes
 
+# --- hostname 설정 ---
+- name: 마스터 호스트네임을 inventory_hostname으로 설정
+  become: yes
+  hostname:
+    name: "{{ inventory_hostname }}"
+
 # --- kubeadm init (Master 초기화) ---
 
 # admin.conf가 없을 때만 kubeadm init 실행 (idempotent 보장)
@@ -188,18 +194,14 @@
     remote_src: yes
 
 # --- master 노드의 기본 control-plane taint 임시 제거 (시스템/Addon Pod 스케줄링용) ---
-
-- name: master 노드의 control-plane taint 임시 제거
+- name: master 노드에서 control-plane taint 제거 (워커 조인 전까지 스케줄 허용)
   become: yes
   become_user: ubuntu
-  delegate_to: "{{ groups['k8s_master'][0] }}"
-  run_once: true
   environment:
     KUBECONFIG: /home/ubuntu/.kube/config
   shell: |
     set -eux
-    kubectl taint nodes {{ groups['k8s_master'][0] }} node-role.kubernetes.io/control-plane:NoSchedule- || true
-    kubectl taint nodes {{ groups['k8s_master'][0] }} node-role.kubernetes.io/master:NoSchedule- || true
+    kubectl taint nodes {{ inventory_hostname }} node-role.kubernetes.io/control-plane:NoSchedule- || true
 
 # --- CNI 설치 (Calico) ---
 
