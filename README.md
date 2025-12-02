@@ -20,10 +20,12 @@
 ## Terraform — CloudStack 인프라 자동 생성
 - Kubernetes Master VM 1대
 - Worker VM 2대
-- Jenkins / GitLab / Registry를 위한 Port Forwarding Rule 자동 생성
-  - Jenkins → 30880 → 8080
-  - GitLab → 30022 → 22, 30080 → 80
-  - Registry → 30500 → 5000
+- 포트포워딩 규칙 자동 구성
+| **서비스**      | **Public Port → Private Port** |
+| -------- | -------------------------- |
+| Jenkins  | 30880 → 8080               |
+| GitLab   | 30080 → 80, 30022 → 22     |
+| Registry | 30500 → 5000               |
 - CloudStack Isolated Network 내부에서 VM 간 통신 구성
 - terraform output 으로 Master/Worker/Port 정보 자동 출력
 
@@ -110,10 +112,13 @@ testapp/
       └── service.yaml
 ```
 
-- MetalLB External IP로 서비스 확인: `curl http://<EXTERNAL-IP>:8080`
-- 출력: `<h1>HELLO from testapp (GitLab → Jenkins → K8s)</h1>`
+- MetalLB로 서비스 확인
+```
+curl http://<EXTERNAL-IP>:8080
+→ HELLO from testapp (GitLab → Jenkins → K8s)
+```
 
-👉 실제 CI/CD 파이프라인이 정상 동작함을 시각적으로 확인
+👉 CI/CD 파이프라인이 정상 동작을 시각적으로 확인
 
 # 최종 요약
 
@@ -123,4 +128,4 @@ testapp/
 | **2. 자동 설정** | Ansible | Kubernetes 설치, Calico CNI, MetalLB 구성 |
 | **3. DevOps 배포** | Kubernetes | Jenkins, GitLab, Registry Pod 배포 |
 | **4. CI/CD 구성** | GitLab + Jenkins | Webhook Pipeline 자동 실행 |
-| **5. 배포 자동화** | K8s Rollout | 이미지 Push → Rolling Update |
+| **5. 배포 자동화** | K8s Rollout | 이미지 Push → Rolling Update 완료 |
