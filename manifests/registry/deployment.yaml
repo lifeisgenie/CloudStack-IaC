@@ -18,20 +18,79 @@ spec:
           persistentVolumeClaim:
             claimName: registry-pvc
         - name: certs
-          emptyDir: {}
+          emptyDir: {}   # CA + 서버 cert 둘 다 여기에 저장
       initContainers:
         - name: generate-certs
           image: alpine:3.20
           command: ["/bin/sh", "-c"]
           args:
             - |
+              set -e
               apk add --no-cache openssl
+
               mkdir -p /certs
-              openssl req -x509 -nodes -days 365 \
+
+              echo "[+] CA 인증서 생성 (CA:TRUE)"
+              cat > /tmp/ca.cnf << 'CA_EOF'
+              [req]
+              distinguished_name = req_distinguished_name
+              x509_extensions = v3_ca
+              prompt = no
+
+              [req_distinguished_name]
+              CN = registry-local-CA
+
+              [v3_ca]
+              basicConstraints = critical,CA:TRUE,pathlen:0
+              keyUsage = critical,keyCertSign,cRLSign
+              subjectKeyIdentifier = hash
+              CA_EOF
+
+              # CA key + CA cert (self-signed, CA:TRUE)
+              openssl req -x509 -nodes -days 3650 -newkey rsa:4096 \
+                -keyout /certs/ca.key \
+                -out /certs/ca.crt \
+                -config /tmp/ca.cnf \
+                -extensions v3_ca
+
+              echo "[+] 서버 인증서용 OpenSSL config(SAN 포함) 생성"
+              cat > /tmp/server.cnf << 'SRV_EOF'
+              [req]
+              distinguished_name = req_distinguished_name
+              prompt = no
+
+              [req_distinguished_name]
+              CN = registry.local
+
+              [v3_req]
+              basicConstraints = CA:FALSE
+              keyUsage = critical,digitalSignature,keyEncipherment
+              extendedKeyUsage = serverAuth
+              subjectAltName = @alt_names
+
+              [alt_names]
+              DNS.1 = registry.local
+              SRV_EOF
+
+              echo "[+] 서버 키 + CSR 생성"
+              openssl req -new -nodes \
                 -newkey rsa:2048 \
                 -keyout /certs/tls.key \
+                -out /certs/server.csr \
+                -config /tmp/server.cnf
+
+              echo "[+] CA로 서버 인증서 서명 (SAN 포함)"
+              openssl x509 -req -days 365 \
+                -in /certs/server.csr \
+                -CA /certs/ca.crt \
+                -CAkey /certs/ca.key \
+                -CAcreateserial \
                 -out /certs/tls.crt \
-                -subj "/CN=registry.local"
+                -extfile /tmp/server.cnf \
+                -extensions v3_req
+
+              echo "[+] 생성된 인증서 확인"
+              openssl x509 -in /certs/tls.crt -noout -subject -issuer -ext subjectAltName
           volumeMounts:
             - name: certs
               mountPath: /certs
