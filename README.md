@@ -13,7 +13,7 @@
 > VM 생성부터 애플리케이션 배포까지 풀 자동화가 구현된 엔드-투-엔드 DevOps 파이프라인
 
 ## Architecture
-![Architecture](./images/architecture.png)
+![Architecture](./images/Architecture.png)
 
 # 전체 구축 흐름
 
