@@ -21,7 +21,7 @@
   - Jenkins → 30880 → 8080
   - GitLab → 30022 → 22, 30080 → 80
   - Registry → 30500 → 5000
-- VMs 전용 네트워크(이중 NAT), 방화벽 설정 포함
+- CloudStack Isolated Network 내부에서 VM 간 통신 구성
 - terraform output 으로 Master/Worker/Port 정보 자동 출력
 
 👉 결과: VM + 네트워크 + 포트포워딩까지 완전 자동화된 인프라 생성
@@ -72,13 +72,15 @@
 ## 테스트 애플리케이션(Nginx 기반 정적 HTML) 배포
 
 ### 디렉토리 구조
-`testapp/
+```
+testapp/
  ├── src/index.html
  ├── Dockerfile
  ├── Jenkinsfile
  └── k8s/
       ├── deployment.yaml
-      └── service.yaml`
+      └── service.yaml
+```
 
 - MetalLB External IP로 서비스 확인: `curl http://<EXTERNAL-IP>:8080`
 - 출력: `<h1>HELLO from testapp (GitLab → Jenkins → K8s)</h1>`
