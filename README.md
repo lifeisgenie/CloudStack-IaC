@@ -12,6 +12,9 @@
 > **Terraform → Ansible → Kubernetes → DevOps → CI/CD**  
 > VM 생성부터 애플리케이션 배포까지 풀 자동화가 구현된 엔드-투-엔드 DevOps 파이프라인
 
+## Architecture
+![Architecture](./images/architecture.png)
+
 # 전체 구축 흐름
 
 ## Terraform — CloudStack 인프라 자동 생성
@@ -54,6 +57,31 @@
 👉 결과: 쿠버네티스 네이티브 DevOps 환경 완성
 
 ## CI/CD 파이프라인 구축
+
+### CI/CD Flow
+
+```
+Developer
+   |
+   v
+GitLab (Push Event)
+   |
+   |  Webhook
+   v
+Jenkins (Pipeline 실행)
+   |
+   |  SSH Remote Build
+   v
+K8s Master Node
+   |
+   |  Docker Build → Push
+   v
+Docker Registry
+   |
+   |  kubectl apply 자동 수행
+   v
+Kubernetes Cluster (testapp Pod 업데이트)
+```
 
 ### GitLab → Jenkins Webhook 연동
 - GitLab 프로젝트 내 Webhook에 Jenkins URL 등록
