@@ -1,0 +1,88 @@
+pipeline {
+    agent any
+
+    environment {
+        REMOTE_HOST   = "192.168.100.201"     // k8s master
+        REMOTE_USER   = "ubuntu"
+        REGISTRY_HOST = "registry.local:5000"
+        IMAGE_NAME    = "testapp"
+        K8S_NAMESPACE = "default"
+    }
+
+    stages {
+        stage('Info') {
+            steps {
+                echo "### GitLab → Jenkins → SSH(${REMOTE_HOST}) → Docker Build/Push → K8s Deploy"
+            }
+        }
+
+        stage('Checkout (for log only)') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Remote Build & Deploy on K8s Master') {
+            steps {
+                sshagent(credentials: ['ssh-master-ubuntu']) {
+                    script {
+                        def COMMIT_SHORT = sh(
+                            script: "git rev-parse --short HEAD",
+                            returnStdout: true
+                        ).trim()
+                        env.IMAGE_TAG = COMMIT_SHORT
+                    }
+
+                    sh """
+                    echo "### SSH to ${REMOTE_USER}@${REMOTE_HOST} and build/deploy"
+
+                    ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} '
+                      set -e
+
+                      echo "### [MASTER] 현재 디렉터리: \$(pwd)"
+
+                      cd ~/testapp || {
+                        echo "testapp 디렉터리가 없어서 clone 진행"
+                        git clone http://192.168.100.231/root/testapp.git ~/testapp
+                        cd ~/testapp
+                      }
+
+                      echo "### [MASTER] Git pull"
+                      git fetch origin
+                      git checkout main || git checkout -b main
+                      git pull origin main
+
+                      echo "### [MASTER] Docker build"
+                      docker build -t ${REGISTRY_HOST}/${IMAGE_NAME}:${IMAGE_TAG} .
+
+                      echo "### [MASTER] Docker tag latest"
+                      docker tag ${REGISTRY_HOST}/${IMAGE_NAME}:${IMAGE_TAG} \\
+                                 ${REGISTRY_HOST}/${IMAGE_NAME}:latest
+
+                      echo "### [MASTER] Docker push"
+                      docker push ${REGISTRY_HOST}/${IMAGE_NAME}:${IMAGE_TAG}
+                      docker push ${REGISTRY_HOST}/${IMAGE_NAME}:latest
+
+                      echo "### [MASTER] kubectl apply"
+                      cd ~/testapp
+                      kubectl apply -n ${K8S_NAMESPACE} -f k8s/deployment.yaml
+                      kubectl apply -n ${K8S_NAMESPACE} -f k8s/service.yaml
+
+                      echo "### [MASTER] rollout status"
+                      kubectl rollout status deployment/${IMAGE_NAME} -n ${K8S_NAMESPACE}
+                    '
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "배포 성공! testapp 최신 버전이 K8s에서 배포되었습니다."
+        }
+        failure {
+            echo "파이프라인 실패 - Jenkins 콘솔 로그 확인 필요"
+        }
+    }
+}
