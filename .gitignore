@@ -1,0 +1,10 @@
+# Terraform state / 변수 (인프라 정보와 비밀값 포함)
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform/
+.terraform.lock.hcl
+
+# Ansible 인벤토리 (내부 IP 포함)
+ansible/inventory/hosts.ini
+terraform/ansible/inventory/hosts.ini
